@@ -1,1 +1,2 @@
-# ztraty_ms
+# Článek ztráty a neztráty
+Máme data o množství pylu na těle opylovače v čase (sbíraní na čertkusu), ze stejných zvířat máme množství pylu ve střevech (odhad ztrát pylu konzumací). Dále máme data o celkových depozicích a SVDs, kterými můžeme ukázat, že i přes ztráty se správný pyl dostává na blizny. Taky máme data o čištění, které vlastně ukazují, že je jedno čištění exrtrémně neefektivní a že se zat tolik pyu tím neztrácí a data z produkce pylu čertkusu ukazující, že je pylu hodně (a kytka ho zas tak velké množství vlastně nepotřebuje).
