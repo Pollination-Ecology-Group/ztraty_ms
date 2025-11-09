@@ -70,7 +70,6 @@ print(plot_by_year)
 plot_by_day <- plot_pollen_deposition(group_by = "day", years = 2024, add_stats = FALSE,colors = c(Conspecific = "lightseagreen", Heterospecific = "lightcoral"))
 print(plot_by_day)
 
-# tady opravit aby byl vyber dne jeste rozdelen dle roku 
 
 
 
