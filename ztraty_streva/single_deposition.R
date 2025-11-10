@@ -329,14 +329,12 @@ summary(model_celkovy_depozice_opylovac_n)
 
 
 
-model_celkovy_depozice_opylovac_vlastnosti <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne) 
+model_celkovy_depozice_opylovac_vlastnosti <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + cashHM + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne) 
 summary(model_celkovy_depozice_opylovac_vlastnosti)
 
-#když se to dá dohromady 
 #trivitatus deponuje více než inteeruptus
-#samice deponují více, ale s menší pravděpodobností, že něco vůbec přinesou
-#s délkou návštěv se zvyšuje kvantita ale snižuje se pravděpodobnost depozice????
-#pri sbírání pylu se deponuje více ale méně pravděpodobně dojde k depozici
+#tady jsem chtěl zjistit pouze porovnání opylovačů, ostatní tam mám jenom žrouty interakcí (dá se do hurdle dát i samotná interakce jako + opylovac:chovani, ale jakmile se tam da vic než 2 tak je to prej moc náročný a nechce to tomu udělat nic...)
+
 
 
 model_celkovy_depozice_opylovac_vlastnosti_n <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne, dist = "negbin") 
@@ -568,6 +566,43 @@ ggplot(efekt_cashHM_count, aes(x = x/60, y = predicted)) +
 
 ## 4.3 grafy výstup pro kvantitativní část - druhy opylovacu ----
 #----------------------------------------------------------#
+model_celkovy_depozice_opylovac_vlastnosti
 
+efekt_opylovac_count <- ggpredict(model_celkovy_depozice_opylovac_vlastnosti, terms = "", component = "conditional")
 
+names(coef(model_celkovy_depozice_opylovac_vlastnosti))
 
+coef_data <- data.frame(
+  opylovac = c("eri.inte", "eri.ten.", "hel.tri."),
+  estimate = c(-0.7484922, -0.1259149, 1.6727360),
+  std_error = c(0.6480029, 0.3677175, 0.3673663)
+)
+
+coef_data$lower_ci <- coef_data$estimate - 1.96 * coef_data$std_error
+coef_data$upper_ci <- coef_data$estimate + 1.96 * coef_data$std_error
+
+coef_data$rr <- exp(coef_data$estimate)
+coef_data$rr_lower <- exp(coef_data$lower_ci)
+coef_data$rr_upper <- exp(coef_data$upper_ci)
+
+ggplot(coef_data, aes(x = rr, y = opylovac)) +
+  geom_point(size = 3, color = "blue") +
+  geom_errorbarh(aes(xmin = rr_lower, xmax = rr_upper), height = 0.2, color = "blue") +
+  scale_x_log10(breaks = c(0.1, 0.5, 1, 2, 5, 10)) +
+  labs(
+    title = "Porovnání opylovačů (Kvantitativní část modelu)",
+    subtitle = "Poměr očekávaného počtu (Rate Ratio)",
+    x = "Rate Ratio (Poměr) - 95% CI (Logaritmická škála)",
+    y = "Typ opylovače"
+  ) +
+  theme_bw() +
+  annotate("text", 
+           label = "*",
+           x = coef_data$rr_upper[coef_data$opylovac == "hel.tri."] + 1,             
+           y = 3.3,             
+           hjust = 1.2,         
+           vjust = 1.5,         
+           size = 7,          
+           color = "grey20"
+    
+  )
