@@ -6,10 +6,6 @@ summary(data2024$celk_pyl)
 summary(data2024$celk_streva)
 
 # STĚRY A STŘEVA V ČASE 
-# udělat dvojice grafů konspec. a heterospec. u stěrů a u střev nebo alternativně dát do jednoho obrázku stěry a do druhého střeva
-
-# úprava času na hodiny a minuty
-
 
 # STĚRY
 with(data2024, plot(2*suc_stery~cas))
@@ -91,8 +87,6 @@ with(data2024, {
          pch = c(16, 16))
 })
 # nejlépe proložit něčím vhodnějším než přímkou, ale čím? Polynom 4.stupně
-#abline(lm(log1p(suc_stery) ~ cas, data = data2024), col = "lightseagreen", lty = 2)
-#abline(lm(log1p(ost_stery) ~ cas, data = data2024), col = "lightcoral", lty = 2)
 
 cas_seq <- seq(min(data2024$cas_num), max(data2024$cas_num), length.out = 200)
 pred_vals <- predict(polynom2, newdata = data.frame(cas_num = cas_seq))
@@ -171,8 +165,6 @@ with(data2024, {
          pch = c(16, 16))
 })
 # nejlépe proložit něčím vhodnějším než přímkou, ale čím? Polynom 2.stupně
-#abline(lm(log1p(suc_streva) ~ cas, data = data2024), col = "lightseagreen", lty = 2)
-#abline(lm(log1p(ost_streva) ~ cas, data = data2024), col = "lightcoral", lty = 2)
 
 cas_seq <- seq(min(data2024$cas_num), max(data2024$cas_num), length.out = 200)
 pred_streva <- predict(polystreva2, newdata = data.frame(cas_num = cas_seq))
@@ -240,26 +232,41 @@ with(data2024, plot(suc_streva~druh))
 with(data2024, plot(konsp_stery~druh))
 with(data2024, plot(konsp_streva~druh))
 
+with(data2024, plot(konsp_stery~cas))
+with(data2024, plot(konsp_streva~cas))
+
 with(data2024, plot(konsp_stery~pohlavi))
 with(data2024, plot(konsp_streva~pohlavi))
 
-# čím to proložit?
-with(data2024, plot(konsp_stery~cas, ylab = "podíl konsp. pylu na 1/2 těla"))
-konspster <- lm(konsp_stery ~ cas, data = data2024)
-abline(konspster)
+# Koeficienty variance (CVs)
 
-with(data2024, plot(konsp_streva~cas, ylab = "podíl konsp. pylu ve střevech"))
-konstreva <- lm(konsp_streva ~ cas, data = data2024)
-abline(konstreva)
+suc_stery_cv <- (sd(data2024$suc_stery) / mean(data2024$suc_stery)) * 100
+suc_stery_cv
 
+ost_stery_cv <- (sd(data2024$ost_stery) / mean(data2024$ost_stery)) * 100
+ost_stery_cv
 
+suc_streva_cv <- (sd(data2024$suc_streva) / mean(data2024$suc_streva)) * 100
+suc_streva_cv
 
+ost_streva_cv <- (sd(data2024$ost_streva) / mean(data2024$ost_streva)) * 100
+ost_streva_cv
 
+cv_data <- data.frame(
+  promenna = c("suc_stery", "ost_stery", "suc_streva", "ost_streva"),
+  CV = c(129.6186, 262.0532, 144.4358, 191.0376)
+)
+cv_data
 
+barplot(cv_data$CV,
+        names.arg = cv_data$promenna,
+        col = c("lightseagreen", "lightcoral"),
+        main = "Srovnání koeficientu variance (CV)",
+        ylab = "CV (%)",
+        ylim = c(0, max(cv_data$CV) * 1.2))
 
-
-
-
-
-
+text(x = 1:length(cv_data$CV),
+     y = cv_data$CV,
+     labels = round(cv_data$CV, 2),
+     pos = 3, cex = 0.9)
 
