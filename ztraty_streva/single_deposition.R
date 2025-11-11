@@ -568,4 +568,14 @@ model_depozice_pocetne_druh_glm_q <- glm(mnozstvi_pylu_konspecificky ~ opylovac 
                                          data = tabulka_depozice_pocetne,
                                          family = "quasipoisson")
 summary(model_depozice_pocetne_druh_glm_q)
+
+
+
+## 5. Jenom tenax ----
+#----------------------------------------------------------#
+
+model_celkovy_depozice_tenax <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok + delka_navstevy, data = tabulka_depozice_tenax, dist = "negbin") #cas + opylovac + chovani + rok
+summary(model_celkovy_depozice_tenax)
+
+#wtf co to je za čísla dole na desátou?
         
