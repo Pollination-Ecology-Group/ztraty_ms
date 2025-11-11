@@ -265,8 +265,7 @@ pscl::vuong(model_kon_dep_zip,model_kon_dep_hurdle)
 #----------------------------------------------------------#
 #pouziti hurdle
 #takze -> cas, opylovac, chovani, rok, pohlavi, delka_navstevy!
-# -> rok je ale hrozně nevyváženej, blbost ho tam dávat
-# -> chovani stejne tak
+
 
 model_kon_dep_hurdle_pocetne_q <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + cashHM + delka_navstevy + chovani + pohlavi|opylovac + cashHM + delka_navstevy + chovani + pohlavi, data = tabulka_depozice_pocetne)
 
@@ -288,58 +287,54 @@ summary(model_kon_dep_hurdle_pocetne_q)
 summary(model_kon_dep_hurdle_pocetne_n)
 summary(model_kon_dep_hurdle_pocetne_g)
 
-AIC(model_kon_dep_hurdle_pocetne_n, model_kon_dep_hurdle_pocetne_g) # -> q se nedá porovnávat pomocí AIC. n jelší, ale jen nepatrně
+AIC(model_kon_dep_hurdle_pocetne_q, model_kon_dep_hurdle_pocetne_n, model_kon_dep_hurdle_pocetne_g) # -> 
 
-#nevim jak porovnat q a n....
+
+### 3.3.1 jaké proměnné použít ----
+#----------------------------------------------------------#
+#pouziti hurdle
+#takze -> cas, opylovac, chovani, rok, pohlavi, delka_navstevy!
+
+
+
 
 ## 3.4 Cas, rok, chovani, pohlavi, delku navstev chci pres vsechny opylovace ----
 #----------------------------------------------------------#
 
-model_celkovy_depozice_q <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok, data = tabulka_depozice) #cas + opylovac + chovani + rok
-summary(model_celkovy_depozice_q)
-
-#count část: s časem se snižuje depozice
-#binomial: samice méně častěji deponují vůbec něco, při pojídání pylu se deponuje méně pravděpodobně než při pojídání nektaru, v roce 2023 byly vyšší depozice než v roce 2022
-
-
 model_celkovy_depozice_n <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok, data = tabulka_depozice, dist = "negbin") #cas + opylovac + chovani + rok
 summary(model_celkovy_depozice_n)
 
-#při negbin není signifikantní nižší numerická depozice času
+
+#binomial: samice méně častěji deponují vůbec něco, při pojídání pylu se deponuje méně pravděpodobně než při pojídání nektaru, v roce 2023 byly vyšší depozice než v roce 2022
 
 
-model_celkovy_depozice_delka_navstev <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok + delka_navstevy, data = tabulka_depozice) #cas + opylovac + chovani + rok
+model_celkovy_depozice_delka_navstev <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok + delka_navstevy, data = tabulka_depozice, dist = "negbin") #cas + opylovac + chovani + rok
 summary(model_celkovy_depozice_delka_navstev)
 
-#s delkou navstevy takhle
+#s delkou navstevy takhle dáva smysl to tam zahrnout, už jen když člověk vidí co to udělalo s tím rokem 2023
+table(tabulka_depozice$delka_navstevy)
 
 
 ## 3.4 opylovace mezi sebou chci porovnavat jenom u pocetnych + z predchozího vím, že hlavně mají vliv pohlaví, chování a délka návštěvy a celý je to dohromady ucelený jakožto vlastnosti opylovače. ----
 #----------------------------------------------------------#
 
-model_celkovy_depozice_opylovac_q <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac, data = tabulka_depozice_pocetne) 
-summary(model_celkovy_depozice_opylovac_q)
 
-#trivitatus a tenax deponují numericky více než interuptus
-
-model_celkovy_depozice_opylovac_n <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac, data = tabulka_depozice_pocetne, dist = "negbin") 
-summary(model_celkovy_depozice_opylovac_n)
-
-#při negative binomial trivitatus deponuje kvantitativně víc než interuptus
-
-
-
-model_celkovy_depozice_opylovac_vlastnosti <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + cashHM + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne) 
+model_celkovy_depozice_opylovac_vlastnosti <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + cashHM + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne, dist = "negbin") 
 summary(model_celkovy_depozice_opylovac_vlastnosti)
 
-#trivitatus deponuje více než inteeruptus
-#tady jsem chtěl zjistit pouze porovnání opylovačů, ostatní tam mám jenom žrouty interakcí (dá se do hurdle dát i samotná interakce jako + opylovac:chovani, ale jakmile se tam da vic než 2 tak je to prej moc náročný a nechce to tomu udělat nic...)
+#no když tomu užerou variabilitu ostatní tak už prd
+table(tabulka_depozice_pocetne$pohlavi[tabulka_depozice_pocetne$opylovac == "hel.tri."])
+#aha no tak jestli mě zajímá hel.tri. tak brát pohlaví je asi oof
+table(tabulka_depozice_pocetne$opylovac)
+#dobry nejsou vymazany protože mají u pohlavi NA
+table(tabulka_depozice_pocetne$opylovac[tabulka_depozice_pocetne$rok == "2024"])
+#no všichni hel.tri byly skoro v roce 2024, rok tam taky nemá smysl dávat
 
 
+model_celkovy_depozice_opylovac_vlastnosti <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + cashHM + delka_navstevy + chovani, data = tabulka_depozice_pocetne, dist = "negbin") 
+summary(model_celkovy_depozice_opylovac_vlastnosti)
 
-model_celkovy_depozice_opylovac_vlastnosti_n <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ opylovac + pohlavi + delka_navstevy + chovani, data = tabulka_depozice_pocetne, dist = "negbin") 
-summary(model_celkovy_depozice_opylovac_vlastnosti_n)
-#když se tam dá negative binomial tak zůstanou signifikantní binomial
+#tohle dává hlavu a patu
 
 # 4.0 grafy ----
 #----------------------------------------------------------#
@@ -349,8 +344,8 @@ summary(model_celkovy_depozice_opylovac_vlastnosti_n)
 #----------------------------------------------------------#
 
 #s vystupy tohoto modelu
-model_hurdle <- model_celkovy_depozice_q <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok, data = tabulka_depozice,dist = "poisson",zero.dist = "binomial", x = TRUE, y = TRUE) 
-summary(model_celkovy_depozice_q)
+model_hurdle <- pscl::hurdle(mnozstvi_pylu_konspecificky ~ cashHM + pohlavi + chovani + rok + delka_navstevy, data = tabulka_depozice, dist = "negbin") #cas + opylovac + chovani + rok
+summary(model_celkovy_depozice_delka_navstev)
 
 
 tabulka_depozice$pohlavi <- as.factor(tabulka_depozice$pohlavi)
@@ -362,10 +357,12 @@ model_data <- model_hurdle$model
 avg_cashHM <- mean(model_data$cashHM) 
 ref_chovani <- levels(model_data$chovani)[1]
 ref_rok <- levels(model_data$rok)[1]
+avg_delka <- mean(model_data$delka_navstevy)
 
 newdata_grid <- data.frame(
   pohlavi = c("samec", "samice"),
   cashHM = avg_cashHM,
+  delka_navstevy = avg_delka,
   chovani = factor(ref_chovani, levels = levels(model_data$chovani)),
   rok = factor(ref_rok, levels = levels(model_data$rok))
 )
@@ -433,10 +430,13 @@ avg_cashHM <- mean(model_data$cashHM)
 ref_pohlavi <- levels(model_data$pohlavi)[1] # Držíme pohlaví na referenční úrovni
 ref_rok <- levels(model_data$rok)[1]     # Držíme rok na referenční úrovni
 all_chovani <- levels(model_data$chovani) # Chceme predikci pro všechny úrovně chování
+avg_delka <- mean(model_data$delka_navstevy)
+
 
 newdata_grid_chovani <- expand.grid(
   chovani = all_chovani,
   cashHM = avg_cashHM,
+  delka_navstevy = avg_delka,
   pohlavi = factor(ref_pohlavi, levels = levels(model_data$pohlavi)),
   rok = factor(ref_rok, levels = levels(model_data$rok))
 )
@@ -483,68 +483,14 @@ Chovani <- ggplot(final_data_chovani, aes(x = chovani, y = prob, ymin = lower_pr
   expand_limits(y = 0)
 
 
-model_data <- model_hurdle$model 
-avg_cashHM <- mean(model_data$cashHM) 
-ref_pohlavi <- levels(model_data$pohlavi)[1] # Držíme pohlaví na referenční úrovni
-ref_chovani <- levels(model_data$chovani)[1] # Držíme chování na referenční úrovni
-all_rok <- levels(model_data$rok)         # Chceme predikci pro všechny roky
-
-newdata_grid_rok <- expand.grid(
-  rok = all_rok,
-  cashHM = avg_cashHM,
-  pohlavi = factor(ref_pohlavi, levels = levels(model_data$pohlavi)),
-  chovani = factor(ref_chovani, levels = levels(model_data$chovani))
-)
-
-# --- KROK 2: Predikce log-odds ---
-pred_link_rok <- predict(model_hurdle, 
-                         newdata = newdata_grid_rok, 
-                         type = "zero")
-
-# --- KROK 3: Transformace na pravděpodobnost ---
-final_data_rok <- cbind(newdata_grid_rok, fit = pred_link_rok)
-final_data_rok$prob <- plogis(final_data_rok$fit) 
-
-# --- KROK 4: Ruční výpočet Intervalů Spolehlivosti ---
-mm_rok <- model.matrix(delete.response(terms(model_hurdle, model = "zero")), 
-                       newdata_grid_rok, 
-                       xlev = model_hurdle$xlevels$zero)
-vcov_zero <- vcov(model_hurdle, model = "zero")
-
-final_data_rok$se_link <- sqrt(diag(mm_rok %*% vcov_zero %*% t(mm_rok)))
-final_data_rok$lower_link <- final_data_rok$fit - 1.96 * final_data_rok$se_link
-final_data_rok$upper_link <- final_data_rok$fit + 1.96 * final_data_rok$se_link
-
-final_data_rok$lower_prob <- plogis(final_data_rok$lower_link)
-final_data_rok$upper_prob <- plogis(final_data_rok$upper_link)
-
-# --- KROK 5: Finální kontrola dat ---
-print(final_data_rok)
-
-# --- KROK 6: Vykreslení grafu pro ROK ---
-Rok <- ggplot(final_data_rok, aes(x = rok, y = prob, ymin = lower_prob, ymax = upper_prob)) +
-  geom_pointrange(size = 0.8) + 
-  labs(title = "Vliv roku na P(pyl > 0)",
-       x = "Rok",
-       y = "Pravděpodobnost přítomnosti pylu") +
-  theme_minimal() +
-  
-  # Přidání hvězdičky (zde jedna *)
-  annotate("text", 
-           x = "2023", # Kategorie, která byla signifikantní
-           y = final_data_rok$upper_prob[final_data_rok$rok == "2023"] + 0.02,
-           label = "*", # Jedna hvězdička
-           size = 8) +
-  expand_limits(y = 0)
-
-
 ## 4.2 grafy výstup pro binomickou a kvantitativní část pohlavi, rok, chovani ----
 #----------------------------------------------------------#
 
 #vystup pro binomickou část
-(Pohlavi + Chovani) / Rok
+Pohlavi + Chovani
 
 
+#ale s pouzitim negbin distribuje neni absolutně signifikatní
 efekt_cashHM_count <- ggpredict(model_hurdle, terms = "cashHM [all]", component = "conditional")
 
 #vystup pro kvantitativní část
@@ -567,15 +513,14 @@ ggplot(efekt_cashHM_count, aes(x = x/60, y = predicted)) +
 ## 4.3 grafy výstup pro kvantitativní část - druhy opylovacu ----
 #----------------------------------------------------------#
 model_celkovy_depozice_opylovac_vlastnosti
-
-efekt_opylovac_count <- ggpredict(model_celkovy_depozice_opylovac_vlastnosti, terms = "", component = "conditional")
+summary(model_celkovy_depozice_opylovac_vlastnosti)
 
 names(coef(model_celkovy_depozice_opylovac_vlastnosti))
 
 coef_data <- data.frame(
   opylovac = c("eri.inte", "eri.ten.", "hel.tri."),
-  estimate = c(-0.7484922, -0.1259149, 1.6727360),
-  std_error = c(0.6480029, 0.3677175, 0.3673663)
+  estimate = c(-0.4885916, 1.2589329, 1.9961980),
+  std_error = c(2.1948492, 0.8982616, 0.9461695)
 )
 
 coef_data$lower_ci <- coef_data$estimate - 1.96 * coef_data$std_error
@@ -606,3 +551,21 @@ ggplot(coef_data, aes(x = rr, y = opylovac)) +
            color = "grey20"
     
   )
+
+
+## 5. zkouska toho samého s glm a quasipoisson ----
+#----------------------------------------------------------#
+
+model_depozice_pocetne_druh_glm_q <- glm(mnozstvi_pylu_konspecificky ~ pohlavi + cashHM + chovani + rok + delka_navstevy,
+                                         data = tabulka_depozice,
+                                         family = "quasipoisson")
+summary(model_depozice_pocetne_druh_glm_q)
+
+
+
+
+model_depozice_pocetne_druh_glm_q <- glm(mnozstvi_pylu_konspecificky ~ opylovac + cashHM +chovani + delka_navstevy,
+                                         data = tabulka_depozice_pocetne,
+                                         family = "quasipoisson")
+summary(model_depozice_pocetne_druh_glm_q)
+        
